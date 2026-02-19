@@ -625,13 +625,69 @@ class TaskPlanner extends EventEmitter {
   _inferComplexity(desc) {
     let c = 5;
     const d = desc.toLowerCase();
-    if (d.includes('simple') || d.includes('basic')) c -= 2;
-    if (d.includes('complex') || d.includes('advanced')) c += 3;
-    if (d.includes('multiple files') || d.includes('full system')) c += 2;
-    if (d.includes('integration') || d.includes('architecture')) c += 2;
-    if (d.length > 500) c += 1;
-    if (d.split(/\s+/).length > 100) c += 1;
-    return Math.min(10, Math.max(1, c));
+    const words = d.split(/\s+/);
+    const wordCount = words.length;
+    
+    // Simple indicators (reduce complexity)
+    const simplePatterns = [
+      /\b(rename|typo|fix typo|add comment|one.line|trivial)\b/,
+      /\b(alias|lint|delete|remove)\b/,
+      /\b(change .* to|swap|replace .* with|capitalize|update .* to|set .* to)\b/,
+      /\b(semicolon|whitespace|trailing|flag|version|order|const|var|let)\b/,
+    ];
+    // "simple" and "basic" only reduce by 1 (they appear in medium tasks too)
+    const softSimple = /\b(simple|basic|convert|format|sort)\b/.test(d) ? 1 : 0;
+    const simpleHits = simplePatterns.filter(p => p.test(d)).length;
+    c -= simpleHits * 1.5;
+    c -= softSimple;
+    
+    // Short tasks are usually simple
+    if (wordCount <= 12) c -= 1;
+    if (wordCount <= 8) c -= 1;
+    if (wordCount <= 5) c -= 1;
+    
+    // Medium indicators
+    const mediumPatterns = [
+      /\b(unit test|endpoint|middleware|migration|handler|validator)\b/,
+      /\b(refactor|implement|create|build)\b/,
+      /\b(caching|queue|webhook|api)\b/,
+    ];
+    const mediumHits = mediumPatterns.filter(p => p.test(d)).length;
+    if (mediumHits >= 2) c += 1;
+    
+    // Complex indicators (increase complexity)
+    const complexPatterns = [
+      /\b(comprehensive|complete|entire|full system|end.to.end)\b/,
+      /\b(pipeline|architecture|platform|stack|infrastructure)\b/,
+      /\b(multiple|multi.tenant|distributed|cross.service)\b/,
+      /\b(oauth|rbac|role.based|access control|pci compliance)\b/,
+      /\b(anomaly detection|machine learning|escalation|failover)\b/,
+      /\b(design and (build|implement)|redesign|rewrite|architect)\b/,
+      /\b(provisioning|orchestration|exactly.once|leader election)\b/,
+      /\b(billing|compliance|isolation|retraining|drift)\b/,
+    ];
+    const complexHits = complexPatterns.filter(p => p.test(d)).length;
+    c += complexHits * 1.5;
+    
+    // Long descriptions usually mean complex tasks
+    if (wordCount > 20) c += 1;
+    if (wordCount > 35) c += 2;
+    if (wordCount > 60) c += 2;
+    if (d.length > 200) c += 1;
+    if (d.length > 400) c += 1;
+    
+    // Multiple conjunctions / feature lists suggest multi-part work
+    const andCount = (d.match(/\band\b/g) || []).length;
+    if (andCount >= 2) c += 1;
+    if (andCount >= 4) c += 1;
+    if (andCount >= 6) c += 1;
+    
+    // Count technical nouns as complexity signal
+    const techTerms = d.match(/\b(api|database|service|model|queue|cache|auth|token|webhook|migration|deployment|monitoring|testing|scaling|replication|sharding)\b/g) || [];
+    if (techTerms.length >= 4) c += 1;
+    if (techTerms.length >= 7) c += 1;
+    
+    return Math.min(10, Math.max(1, Math.round(c)));
   }
 }
 

@@ -647,7 +647,16 @@ class TaskRouter {
     const normalizedTask = this.normalizeTask(task);
     const scoring = await this.scoreTask(normalizedTask);
 
-    return await this.executeWithBackend(backend, normalizedTask, scoring);
+    const result = await this.executeWithBackend(backend, normalizedTask, scoring);
+    
+    // Record the result in monitor (same as route() method does)
+    if (result.success !== false) {
+      await monitor.recordResult(backend, normalizedTask, true, result.duration, result.tokens);
+    } else {
+      await monitor.recordResult(backend, normalizedTask, false, result.duration, result.tokens || 0);
+    }
+    
+    return result;
   }
 
   /**
