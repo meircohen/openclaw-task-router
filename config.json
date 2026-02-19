@@ -150,7 +150,7 @@
   },
   "dashboard": {
     "port": 3457,
-    "authToken": "300334746c4cfe53620457070720d41cb9f26ecd0bf63220"
+    "authToken": ""
   },
   "webhook": {
     "enabled": true,
