@@ -1,0 +1,164 @@
+{
+  "ENVIRONMENT": "production",
+  "version": 2,
+  "backends": {
+    "claudeCode": {
+      "enabled": true,
+      "preferredModel": "sonnet",
+      "maxAutoUsagePercent": 70,
+      "sessionResetHours": 5,
+      "minIntervalMinutes": 20,
+      "maxIntervalMinutes": 60,
+      "timeoutSeconds": 900,
+      "rateLimit": 20
+    },
+    "codex": {
+      "enabled": true,
+      "maxConcurrent": 3,
+      "timeoutSeconds": 900,
+      "rateLimit": 30
+    },
+    "api": {
+      "enabled": true,
+      "dailyBudgetUsd": 100,
+      "monthlyBudgetUsd": null,
+      "defaultModel": "anthropic/claude-sonnet-4-20250514",
+      "rateLimit": null
+    },
+    "local": {
+      "enabled": true,
+      "ollamaUrl": "http://localhost:11434",
+      "models": {
+        "code": "phi3:mini",
+        "docs": "llama3.2:latest",
+        "review": "phi3:mini"
+      },
+      "timeoutSeconds": 300,
+      "rateLimit": null
+    }
+  },
+  "modelRegistry": {
+    "enabled": true,
+    "fallbackModel": "anthropic/claude-sonnet-4-20250514",
+    "contextSizeThresholds": {
+      "large": 200000,
+      "xlarge": 1000000
+    },
+    "costOptimization": true,
+    "trustDataEnabled": true
+  },
+  "routing": {
+    "hybridEnabled": true,
+    "adaptiveScoringEnabled": true,
+    "performanceWindowDays": 7,
+    "initialScores": {
+      "claudeCode": 85,
+      "codex": 75,
+      "local": 70,
+      "api": 60
+    },
+    "fastLearningThreshold": 20,
+    "fastLearningMultiplier": 2,
+    "queueEnabled": true
+  },
+  "planner": {
+    "enabled": true,
+    "approvalThresholdUsd": 2,
+    "preferSubscription": true,
+    "maxSteps": 10,
+    "parallelExecution": true
+  },
+  "scheduler": {
+    "enabled": true,
+    "tickIntervalMs": 15000,
+    "concurrency": {
+      "claude-code": 1,
+      "codex": 3
+    },
+    "cooldowns": {
+      "claude-code": 1200000,
+      "codex": 300000
+    },
+    "maxRetries": 2,
+    "persistPath": "data/queue-state.json"
+  },
+  "notifications": {
+    "enabled": true,
+    "autoApproveThresholdUsd": 2,
+    "progressUpdateInterval": "per-step",
+    "telegramEnabled": true
+  },
+  "slackNotifications": {
+    "enabled": false,
+    "channel": "",
+    "webhookUrl": ""
+  },
+  "shadowBench": {
+    "enabled": true,
+    "sampleRate": 0.1,
+    "alwaysShadowLocal": true,
+    "shadowCodexWhenIdle": true,
+    "shadowClaudeCodeWhenIdle": true,
+    "idleThresholdPercent": 50,
+    "maxConcurrentShadows": 3,
+    "autoCompare": true,
+    "telegramFeedback": true,
+    "telegramFeedbackThreshold": 0.7,
+    "retentionDays": 30,
+    "maxResults": 1000,
+    "trustThresholds": {
+      "bad": 0.5,
+      "marginal": 0.7,
+      "promising": 0.85,
+      "trusted": 0.85,
+      "minSamples": 10,
+      "trustedMinSamples": 20
+    }
+  },
+  "circuitBreaker": {
+    "enabled": true,
+    "failureThreshold": 8,
+    "failureWindowMinutes": 15,
+    "cooldownMinutes": 10
+  },
+  "dedup": {
+    "enabled": true,
+    "windowMinutes": 30,
+    "similarityThreshold": 0.7,
+    "warnThreshold": 0.5
+  },
+  "confidence": {
+    "enabled": true,
+    "selfHandleThreshold": 95,
+    "offerThreshold": 50
+  },
+  "session": {
+    "enabled": true,
+    "maxRecentCompleted": 10,
+    "contextFilePath": "data/active-context.json"
+  },
+  "warmup": {
+    "enabled": true,
+    "intervalMs": 900000,
+    "preWarmEnabled": false,
+    "healthFilePath": "data/backend-health.json"
+  },
+  "alerts": {
+    "webhookUrl": null,
+    "emailOnRateLimit": false,
+    "alertOnQueueOverflow": true
+  },
+  "dashboard": {
+    "port": 3457,
+    "authToken": "300334746c4cfe53620457070720d41cb9f26ecd0bf63220"
+  },
+  "webhook": {
+    "enabled": true,
+    "maxQueueSize": 50
+  },
+  "github": {
+    "enabled": false,
+    "webhookSecret": "",
+    "repos": []
+  }
+}
